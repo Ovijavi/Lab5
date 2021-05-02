@@ -4,6 +4,7 @@ const img = new Image(); // used to load image from <input> and draw to canvas
 
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
+  //console.log("Image loaded");
   //clear canvas
   let canvas = document.getElementById('user-image');
   let context = canvas.getContext('2d');
@@ -75,10 +76,11 @@ function getDimmensions(canvasWidth, canvasHeight, imageWidth, imageHeight) {
 }
 
 const image_input = document.getElementById('image-input');
-document.addEventListener('change', () => {
-  const preview = document.querySelector('img');
-  const file = image_input.files[0];
-  const reader = new FileReader();
-
-  reader.readAsDataURL(file);
+image_input.addEventListener('change', () => {
+  let input_file = image_input.files[0];
+  img.src = URL.createObjectURL(input_file);
+  img.alt = input_file.name;
+  //console.log("File Uploaded");
+  //console.log(input_file);
+  //console.log(img);
 });
