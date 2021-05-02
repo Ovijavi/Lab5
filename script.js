@@ -6,10 +6,83 @@ const context = canvas.getContext('2d');
 const submit_button = document.querySelector("[type='submit']");
 const clear_button = document.querySelector("[type='reset']");
 const read_button = document.querySelector("[type='button']");
+const voice_select = document.getElementById("voice-selection");
+const image_input = document.getElementById('image-input');
+const meme_form = document.getElementById('generate-meme');
+const volume_slide = document.querySelector("[type='range']");
+const volume_icon = document.querySelector("[id='volume-group']>img");
+
+//fill the voice select input
+voice_select.disabled = false;
+let voices;
+
+//fires when voice options are ready to upload
+speechSynthesis.addEventListener("voiceschanged", () => {
+  voices = speechSynthesis.getVoices();
+  for(let i = 0; i < voices.length; i++){
+    let option = document.createElement('option');
+    option.textContent = voices[i].name + '(' + voices[i].lang + ')';
+
+    if(voices[i].default){
+      option.textContent += ' -- DEFAULT';
+      option.selected = true;
+    }
+
+    option.setAttribute('data-lang', voices[i].lang);
+    option.setAttribute('data-name', voices[i].name);
+    voice_select.appendChild(option);
+  }
+ // console.log(voices);
+});
+
+//fires when read button is clicked
+read_button.addEventListener('click', () => {
+  //get text values from inputs
+  let textTop = document.getElementById('text-top');
+  let textBottom = document.getElementById('text-bottom');
+
+  let textTop_text = textTop.value;
+  let textBottom_text = textBottom.value;
+
+  let utterTop = new SpeechSynthesisUtterance(textTop_text);
+  let utterBottom = new SpeechSynthesisUtterance(textBottom_text);
+
+  let selectedVoice = voice_select.selectedOptions[0].getAttribute('data-name');
+  for(let i = 0; i < voices.length; i++){
+    if(voices[i].name == selectedVoice){
+      utterTop.voice = voices[i];
+      utterBottom.voice = voices[i];
+    }
+  }
+  utterTop.volume = volume_slide.value/100;
+  utterBottom.volume = volume_slide.value/100;
+
+  speechSynthesis.speak(utterTop);
+  speechSynthesis.speak(utterBottom);
+});
+
+//fires when volume is changed
+volume_slide.addEventListener('input', () => {
+  let currVolume = volume_slide.value;
+  if(currVolume >= 67){
+    volume_icon.src = "icons/volume-level-3.svg";
+    volume_icon.alt = "Volume Level 3";
+  } else if(currVolume >= 34){
+    volume_icon.src = "icons/volume-level-2.svg";
+    volume_icon.alt = "Volume Level 2";
+  } else if (currVolume >= 1){
+    volume_icon.src = "icons/volume-level-1.svg";
+    volume_icon.alt = "Volume Level 1";
+  } else{
+    volume_icon.src = "icons/volume-level-0.svg";
+    volume_icon.alt = "Volume Level 0";
+  }
+});
 
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
-  console.log("Image loaded");
+  //console.log("Image loaded");
+
   //clear canvas
   context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -27,11 +100,57 @@ img.addEventListener('load', () => {
   //draw uploaded image
   let newDims = getDimmensions(canvas.width, canvas.height, img.width, img.height);
   context.drawImage(img, newDims.startX, newDims.startY, newDims.width, newDims.height);
+});
 
-  // Some helpful tips:
-  // - Fill the whole Canvas with black first to add borders on non-square images, then draw on top
-  // - Clear the form when a new image is selected
-  // - If you draw the image to canvas here, it will update as soon as a new image is selected
+//fires when image input is changed
+image_input.addEventListener('change', () => {
+  let input_file = image_input.files[0];
+  img.src = URL.createObjectURL(input_file);
+  img.alt = input_file.name;
+
+  //console.log("File Uploaded");
+  //console.log(input_file);
+  //console.log(img);
+});
+
+
+//fires when form is submited
+meme_form.addEventListener('submit', (e) => {
+  //stop button from refreshing the form
+  e.preventDefault();
+
+  //get text values from inputs
+  let textTop = document.getElementById('text-top');
+  let textBottom = document.getElementById('text-bottom');
+
+  let textTop_text = textTop.value;
+  let textBottom_text = textBottom.value;
+
+  //write text to meme
+  context.font = "30px Arial";
+  context.textAlign = "center";
+  context.fillStyle = "white";
+  context.strokeStyle = "black";
+  context.strokeText(textTop_text, canvas.width/2, 60);
+  context.fillText(textTop_text, canvas.width/2, 60);
+  context.strokeText(textBottom_text, canvas.width/2, canvas.height - 30);
+  context.fillText(textBottom_text, canvas.width/2, canvas.height - 30);
+
+  //toggle buttons
+  submit_button.disabled = true;
+  clear_button.disabled = false;
+  read_button.disabled = false;
+});
+
+//fires when clear button is clicked
+clear_button.addEventListener('click', () => {
+  //clear canvas
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  //toggle buttons
+  submit_button.disabled = false;
+  clear_button.disabled = true;
+  read_button.disabled = true;
 });
 
 /**
@@ -73,48 +192,3 @@ function getDimmensions(canvasWidth, canvasHeight, imageWidth, imageHeight) {
 
   return { 'width': width, 'height': height, 'startX': startX, 'startY': startY }
 }
-
-const image_input = document.getElementById('image-input');
-image_input.addEventListener('change', () => {
-  let input_file = image_input.files[0];
-  img.src = URL.createObjectURL(input_file);
-  img.alt = input_file.name;
-  //console.log("File Uploaded");
-  //console.log(input_file);
-  //console.log(img);
-});
-
-//add eventlistener to form
-const meme_form = document.getElementById('generate-meme');
-meme_form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  let textTop = document.getElementById('text-top');
-  let textBottom = document.getElementById('text-bottom');
-
-  let textTop_text = textTop.value;
-  let textBottom_text = textBottom.value;
-
-  context.font = "30px Arial";
-  context.textAlign = "center";
-  context.fillStyle = "white";
-  context.strokeStyle = "black";
-  context.strokeText(textTop_text, canvas.width/2, 60);
-  context.fillText(textTop_text, canvas.width/2, 60);
-  context.strokeText(textBottom_text, canvas.width/2, canvas.height - 30);
-  context.fillText(textBottom_text, canvas.width/2, canvas.height - 30);
-
-  //toggle buttons
-  submit_button.disabled = true;
-  clear_button.disabled = false;
-  read_button.disabled = false;
-});
-
-clear_button.addEventListener('click', () => {
-  //clear canvas
-  context.clearRect(0, 0, canvas.width, canvas.height);
-
-  //toggle buttons
-  submit_button.disabled = false;
-  clear_button.disabled = true;
-  read_button.disabled = true;
-});
