@@ -4,7 +4,29 @@ const img = new Image(); // used to load image from <input> and draw to canvas
 
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
-  // TODO
+  //clear canvas
+  let canvas = document.getElementById('user-image');
+  let context = canvas.getContext('2d');
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  //toggle buttons
+  let submit_button = document.querySelector("[type='submit']");
+  let clear_button = document.querySelector("[type='reset']");
+  let read_button = document.querySelector("[type='button']");
+
+  submit_button.disabled = true;
+  clear_button.disabled = false;
+  read_button = false;
+
+  //fill canvas
+  context.beginPath();
+  context.rect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "black";
+  context.fill();
+
+  //draw uploaded image
+  let newDims = getDimmensions(canvas.width, canvas.height, img.width, img.height);
+  context.drawImage(img, newDims.startX, newDims.startY, newDims.width, newDims.height);
 
   // Some helpful tips:
   // - Fill the whole Canvas with black first to add borders on non-square images, then draw on top
@@ -51,3 +73,12 @@ function getDimmensions(canvasWidth, canvasHeight, imageWidth, imageHeight) {
 
   return { 'width': width, 'height': height, 'startX': startX, 'startY': startY }
 }
+
+const image_input = document.getElementById('image-input');
+document.addEventListener('change', () => {
+  const preview = document.querySelector('img');
+  const file = image_input.files[0];
+  const reader = new FileReader();
+
+  reader.readAsDataURL(file);
+});
