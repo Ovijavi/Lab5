@@ -1,23 +1,22 @@
 // script.js
 
 const img = new Image(); // used to load image from <input> and draw to canvas
+const canvas = document.getElementById('user-image');
+const context = canvas.getContext('2d');
+const submit_button = document.querySelector("[type='submit']");
+const clear_button = document.querySelector("[type='reset']");
+const read_button = document.querySelector("[type='button']");
 
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
-  //console.log("Image loaded");
+  console.log("Image loaded");
   //clear canvas
-  let canvas = document.getElementById('user-image');
-  let context = canvas.getContext('2d');
   context.clearRect(0, 0, canvas.width, canvas.height);
 
   //toggle buttons
-  let submit_button = document.querySelector("[type='submit']");
-  let clear_button = document.querySelector("[type='reset']");
-  let read_button = document.querySelector("[type='button']");
-
-  submit_button.disabled = true;
-  clear_button.disabled = false;
-  read_button = false;
+  submit_button.disabled = false;
+  clear_button.disabled = true;
+  read_button.disabled = true;
 
   //fill canvas
   context.beginPath();
@@ -83,4 +82,39 @@ image_input.addEventListener('change', () => {
   //console.log("File Uploaded");
   //console.log(input_file);
   //console.log(img);
+});
+
+//add eventlistener to form
+const meme_form = document.getElementById('generate-meme');
+meme_form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  let textTop = document.getElementById('text-top');
+  let textBottom = document.getElementById('text-bottom');
+
+  let textTop_text = textTop.value;
+  let textBottom_text = textBottom.value;
+
+  context.font = "30px Arial";
+  context.textAlign = "center";
+  context.fillStyle = "white";
+  context.strokeStyle = "black";
+  context.strokeText(textTop_text, canvas.width/2, 60);
+  context.fillText(textTop_text, canvas.width/2, 60);
+  context.strokeText(textBottom_text, canvas.width/2, canvas.height - 30);
+  context.fillText(textBottom_text, canvas.width/2, canvas.height - 30);
+
+  //toggle buttons
+  submit_button.disabled = true;
+  clear_button.disabled = false;
+  read_button.disabled = false;
+});
+
+clear_button.addEventListener('click', () => {
+  //clear canvas
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  //toggle buttons
+  submit_button.disabled = false;
+  clear_button.disabled = true;
+  read_button.disabled = true;
 });
